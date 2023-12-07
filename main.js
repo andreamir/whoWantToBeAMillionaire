@@ -1,10 +1,10 @@
 async function getQuestion({level}) {
   const categories = ['html', 'css','javascript'];
   const category = categories[Math.floor(Math.random() * categories.length)];
-  console.log('Category en getQuestion', category);
+  // console.log('Category en getQuestion', category);
   const response = await fetch(`https://quiz-api-ofkh.onrender.com/questions/random?level=${level}&category=${category}`);
   const formattedResponse = await response.json();
-  console.log('async/await', formattedResponse);
+  // console.log('async/await', formattedResponse);
   return formattedResponse;
 }
 
@@ -17,7 +17,6 @@ function printQuestion({ game }) {
 function printAnswers({ game }) {
   const answers = Object.values(game.question.answers);
   const answerElements = document.querySelectorAll('.answer');
-
   for (let i = 0; i < answerElements.length; i++) {
     const answerElement = answerElements[i];
     answerElement.innerText = answers[i];
@@ -58,8 +57,10 @@ function removeCorrectAnswer(){
 }
 
 function addProgress({answerProgress, game}){
+  answerProgress[13].classList.add('selected');
   for (let i = 0; i < answerProgress.length; i++) {
     if (game.answerCount == answerProgress[i].innerText){
+      answerProgress[i].classList.remove('selected');
       answerProgress[i].classList.add('correctAnswer');
     }
   }
@@ -96,7 +97,6 @@ function selectedAnswer({event, game}) {
   const selectedAnswer = event.target;
   const validAnswer = document.querySelector('.answer.correctAnswer');
   const invalidAnswer = document.querySelector('.answer.incorrectAnswer');
-
   if (validAnswer || invalidAnswer) {
     return;
   }
@@ -174,6 +174,7 @@ function createPage({game}) {
 
   root.appendChild(container);
 }
+
 
 async function initPage() {
   console.log('initPage');
