@@ -25,44 +25,47 @@ function printAnswers({ game }) {
   return answers;
 }
 
+function answerIsIncorrect({ selectedAnswer, game }){
+  console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
+  selectedAnswer.classList.remove('selected');
+  selectedAnswer.classList.add('incorrectAnswer');
+  const correctAnswerId = game.question.correctAnswer;
+  const correctAnswerElement = document.getElementById(correctAnswerId);
+  correctAnswerElement.classList.add('correctAnswer');
+}
+
+async function answerIsCorrect({ selectedAnswer, game }){
+  selectedAnswer.classList.remove('selected');
+  selectedAnswer.classList.add('correctAnswer');
+  game.answerCount++;
+  if (game.answerCount == 5){
+    game.level = 'medium';
+  }
+  if (game.answerCount >= 10){
+    game.level = 'hard';
+  }
+  if (game.answerCount == 15){
+    console.log('se acabó el juego');
+    return;
+  }
+  console.log('corrected answers',game.answerCount);
+  console.log('level', game.level);
+  const newQuestion = await getQuestion({level:game.level, category:game.category});
+  game.question = newQuestion;
+  printQuestion({ game });
+  const validAnswer = document.querySelector('.answer.correctAnswer');
+  validAnswer.classList.remove('correctAnswer');
+  printAnswers({ game });
+}
+
+
 async function isCorrect({ selectedAnswer, correctAnswer, game}){
 
   if (selectedAnswer.id === correctAnswer){
-    selectedAnswer.classList.remove('selected');
-    selectedAnswer.classList.add('correctAnswer');
-    game.answerCount++;
-    if (game.answerCount == 5){
-      game.level = 'medium';
-    }
-    if (game.answerCount >= 10){
-      game.level = 'hard';
-    }
-    if (game.answerCount == 15){
-      console.log('se acabó el juego');
-      return;
-    }
-    console.log('corrected answers',game.answerCount);
-    console.log('level', game.level);
-    const newQuestion = await getQuestion({level:game.level, category:game.category});
-    game.question = newQuestion;
-    // game.category = newQuestion.category;
-    printQuestion({ game });
-    const validAnswer = document.querySelector('.answer.correctAnswer');
-    // console.log(validAnswer.innerHTML);
-    validAnswer.classList.remove('correctAnswer');
-    printAnswers({ game });
-
-
-
+    answerIsCorrect({ selectedAnswer, correctAnswer, game });
   } else {
-    console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
-    selectedAnswer.classList.remove('selected');
-    selectedAnswer.classList.add('incorrectAnswer');
-    const correctAnswerId = game.question.correctAnswer;
-    const correctAnswerElement = document.getElementById(correctAnswerId);
-    correctAnswerElement.classList.add('correctAnswer');
+    answerIsIncorrect({ selectedAnswer, game });
   }
-
 }
 
 function selectedAnswer({event, game}) {
