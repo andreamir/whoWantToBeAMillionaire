@@ -1,4 +1,7 @@
-async function getQuestion({level, category}) {
+async function getQuestion({level}) {
+  const categories = ['html', 'css','javascript'];
+  const category = categories[Math.floor(Math.random() * categories.length)];
+  console.log('Category en getQuestion', category);
   const response = await fetch(`https://quiz-api-ofkh.onrender.com/questions/random?level=${level}&category=${category}`);
   const formattedResponse = await response.json();
   console.log('async/await', formattedResponse);
@@ -71,7 +74,7 @@ function selectedAnswer({event, game}) {
   // console.log('selectedAnswer',selectedAnswer.id);
   const correctAnswer = game.question.correctAnswer;
   console.log('correctAnswer',correctAnswer);
-  console.log('category', game.category);
+  // console.log('category', game.category);
   if (selectedAnswer.classList.contains('selected')) {
     return isCorrect({selectedAnswer, correctAnswer, game});
   }
@@ -147,12 +150,12 @@ function createPage({game}) {
 async function initPage() {
   console.log('initPage');
   const level = 'easy';
-  const category = 'html';
+  // const category = 'html';
   const answerCount = 0;
-  const question = await getQuestion({level, category});
+  const question = await getQuestion({level});
   const game = {
     level,
-    category,
+    // category,
     question,
     answerCount,
   };
