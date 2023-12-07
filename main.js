@@ -45,38 +45,43 @@ function answerIsIncorrect({ selectedAnswer, game }){
 async function getNewQuestion({game}){
   const newQuestion = await getQuestion({level:game.level, category:game.category});
   game.question = newQuestion;
-};
+}
 
 function finishedGame({answerProgress}){
   answerProgress[0].classList.add('correctAnswer');
   console.log('YOU WON!!');
 }
 
-async function answerIsCorrect({ selectedAnswer, game }){
+function removeCorrectAnswer(){
+  const validAnswer = document.querySelector('.answer.correctAnswer');
+  validAnswer.classList.remove('correctAnswer');
+}
 
-  selectedAnswer.classList.remove('selected');
-  selectedAnswer.classList.add('correctAnswer');
-  game.answerCount++;
-
-  const answerProgress = document.querySelectorAll('.round');
-  await updateGameLevel({ game });
-  if (game.answerCount == 15){
-    return finishedGame({answerProgress});
-  }
+function addProgress({answerProgress, game}){
   for (let i = 0; i < answerProgress.length; i++) {
     if (game.answerCount == answerProgress[i].innerText){
       answerProgress[i].classList.add('correctAnswer');
     }
   }
-  console.log('corrected answers',game.answerCount);
-  console.log('level', game.level);
-  await getNewQuestion({game});
-  printQuestion({ game });
-  const validAnswer = document.querySelector('.answer.correctAnswer');
-  validAnswer.classList.remove('correctAnswer');
-  printAnswers({ game });
 }
 
+async function answerIsCorrect({ selectedAnswer, game }){
+  selectedAnswer.classList.remove('selected');
+  selectedAnswer.classList.add('correctAnswer');
+  game.answerCount++;
+  const answerProgress = document.querySelectorAll('.round');
+  await updateGameLevel({ game });
+  if (game.answerCount == 15){
+    return finishedGame({answerProgress});
+  }
+  addProgress({answerProgress, game});
+  // console.log('corrected answers',game.answerCount);
+  // console.log('level', game.level);
+  await getNewQuestion({game});
+  printQuestion({ game });
+  removeCorrectAnswer(),
+  printAnswers({ game });
+}
 
 async function isCorrect({ selectedAnswer, correctAnswer, game}){
 
