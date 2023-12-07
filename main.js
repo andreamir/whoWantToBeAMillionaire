@@ -38,6 +38,7 @@ async function answerIsCorrect({ selectedAnswer, game }){
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('correctAnswer');
   game.answerCount++;
+  const answerProgress = document.querySelectorAll('.round');
   if (game.answerCount == 5){
     game.level = 'medium';
   }
@@ -45,10 +46,20 @@ async function answerIsCorrect({ selectedAnswer, game }){
     game.level = 'hard';
   }
   if (game.answerCount == 15){
-    console.log('se acabó el juego');
+    answerProgress[0].classList.add('correctAnswer');
+
+    console.log('YOU WON!!');
     return;
   }
+  for (let i = 0; i < answerProgress.length; i++) {
+    if (game.answerCount == answerProgress[i].innerText){
+      answerProgress[i].classList.add('correctAnswer');
+    }
+  }
   console.log('corrected answers',game.answerCount);
+  if (game.answerCount === answerProgress.innerText) {
+    console.log('Hola');
+  }
   console.log('level', game.level);
   const newQuestion = await getQuestion({level:game.level, category:game.category});
   game.question = newQuestion;
