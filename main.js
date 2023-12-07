@@ -25,6 +25,15 @@ function printAnswers({ game }) {
   return answers;
 }
 
+async function updateGameLevel({ game }) {
+  if (game.answerCount === 5) {
+    game.level = 'medium';
+  }
+  if (game.answerCount >= 10) {
+    game.level = 'hard';
+  }
+}
+
 function answerIsIncorrect({ selectedAnswer, game }){
   console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
   selectedAnswer.classList.remove('selected');
@@ -33,23 +42,26 @@ function answerIsIncorrect({ selectedAnswer, game }){
   const correctAnswerElement = document.getElementById(correctAnswerId);
   correctAnswerElement.classList.add('correctAnswer');
 }
+async function getNewQuestion({game}){
+  const newQuestion = await getQuestion({level:game.level, category:game.category});
+  game.question = newQuestion;
+};
+
+function finishedGame({answerProgress}){
+  answerProgress[0].classList.add('correctAnswer');
+  console.log('YOU WON!!');
+}
 
 async function answerIsCorrect({ selectedAnswer, game }){
+
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('correctAnswer');
   game.answerCount++;
-  const answerProgress = document.querySelectorAll('.round');
-  if (game.answerCount == 5){
-    game.level = 'medium';
-  }
-  if (game.answerCount >= 10){
-    game.level = 'hard';
-  }
-  if (game.answerCount == 15){
-    answerProgress[0].classList.add('correctAnswer');
 
-    console.log('YOU WON!!');
-    return;
+  const answerProgress = document.querySelectorAll('.round');
+  await updateGameLevel({ game });
+  if (game.answerCount == 15){
+    return finishedGame({answerProgress});
   }
   for (let i = 0; i < answerProgress.length; i++) {
     if (game.answerCount == answerProgress[i].innerText){
@@ -57,12 +69,8 @@ async function answerIsCorrect({ selectedAnswer, game }){
     }
   }
   console.log('corrected answers',game.answerCount);
-  if (game.answerCount === answerProgress.innerText) {
-    console.log('Hola');
-  }
   console.log('level', game.level);
-  const newQuestion = await getQuestion({level:game.level, category:game.category});
-  game.question = newQuestion;
+  await getNewQuestion({game});
   printQuestion({ game });
   const validAnswer = document.querySelector('.answer.correctAnswer');
   validAnswer.classList.remove('correctAnswer');
@@ -88,11 +96,8 @@ function selectedAnswer({event, game}) {
     return;
   }
   const answers = document.querySelectorAll('.answer');
-  // console.log('answers',answers);
-  // console.log('selectedAnswer',selectedAnswer.id);
   const correctAnswer = game.question.correctAnswer;
   console.log('correctAnswer',correctAnswer);
-  // console.log('category', game.category);
   if (selectedAnswer.classList.contains('selected')) {
     return isCorrect({selectedAnswer, correctAnswer, game});
   }
