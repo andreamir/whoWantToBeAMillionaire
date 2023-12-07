@@ -55,8 +55,12 @@ async function isCorrect({ selectedAnswer, correctAnswer, game}){
 
 
   } else {
+    console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
     selectedAnswer.classList.remove('selected');
     selectedAnswer.classList.add('incorrectAnswer');
+    const correctAnswerId = game.question.correctAnswer;
+    const correctAnswerElement = document.getElementById(correctAnswerId);
+    correctAnswerElement.classList.add('correctAnswer');
   }
 
 }
