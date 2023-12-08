@@ -85,3 +85,20 @@ body {
 .incorrectAnswer{
   background-color: red;
 }
+
+.lifeline{
+  background-color: coral;
+  height: 20px;
+  width: 20px;
+}
+
+
+.lifeline{
+  background-color: rgb(170, 80, 255);
+  height: 100px;
+  width: 100px;
+}
+
+.yellow{
+  background-color: deeppink;
+}
