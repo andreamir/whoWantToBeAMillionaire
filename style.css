@@ -10,8 +10,16 @@ body {
   margin-right: 10px;
   background-color: antiquewhite;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: end;
+  align-items: center;
+  position: relative;
+}
+
+.gif {
+  height: 400px;
+  width: 600px;
+  background-color: rgb(24, 217, 159);
 }
 
 .panel {

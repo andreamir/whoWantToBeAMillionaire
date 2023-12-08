@@ -4,7 +4,7 @@ async function getQuestion({level}) {
   // console.log('Category en getQuestion', category);
   const response = await fetch(`https://quiz-api-ofkh.onrender.com/questions/random?level=${level}&category=${category}`);
   const formattedResponse = await response.json();
-  // console.log('async/await', formattedResponse);
+  console.log('async/await', formattedResponse);
   return formattedResponse;
 }
 
@@ -57,7 +57,6 @@ function removeCorrectAnswer(){
 }
 
 function addProgress({answerProgress, game}){
-  answerProgress[13].classList.add('selected');
   for (let i = 0; i < answerProgress.length; i++) {
     if (game.answerCount == answerProgress[i].innerText){
       answerProgress[i].classList.remove('selected');
@@ -95,6 +94,8 @@ async function isCorrect({ selectedAnswer, correctAnswer, game}){
 
 function selectedAnswer({event, game}) {
   const selectedAnswer = event.target;
+  // const answerProgress = document.querySelectorAll('.round');
+  // answerProgress[13].classList.add('selected');
   const validAnswer = document.querySelector('.answer.correctAnswer');
   const invalidAnswer = document.querySelector('.answer.incorrectAnswer');
   if (validAnswer || invalidAnswer) {
@@ -110,6 +111,20 @@ function selectedAnswer({event, game}) {
   selectedAnswer.classList.add('selected');
 }
 
+// function gifResponse(){
+//   const videoElement = document.createElement('video');
+//   videoElement.url = 'https://i.giphy.com/5bDeJPwBfNTENexhEQ.mp4';
+//   videoElement.width = 640; // Ancho del video
+//   videoElement.height = 360; // Alto del video
+//   videoElement.controls = true; // Mostrar controles del reproductor
+//   return videoElement;
+// }
+
+function createVideoPanel(){
+  const gif = document.createElement('div');
+  gif.classList.add('gif');
+  return gif;
+}
 
 function createPanel(){
   const panel = document.createElement('div');
@@ -160,6 +175,12 @@ function createPage({game}) {
   const container = document.createElement('div');
   container.classList.add('container');
 
+  const gifResponse = createVideoPanel();
+  container.appendChild(gifResponse);
+
+  // const videoResponse = gifResponse();
+  // gifResponse.appendChild(videoResponse);
+
   const panel = createPanel();
   container.appendChild(panel);
 
@@ -180,6 +201,7 @@ async function initPage() {
   console.log('initPage');
   const level = 'easy';
   // const category = 'html';
+  const panelProgressCount = 14;
   const answerCount = 0;
   const question = await getQuestion({level});
   const game = {
@@ -187,6 +209,7 @@ async function initPage() {
     // category,
     question,
     answerCount,
+    panelProgressCount,
   };
   createPage({game});
   printQuestion({game});
