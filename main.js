@@ -102,6 +102,7 @@ function selectedAnswer({event, game}) {
     return;
   }
   const answers = document.querySelectorAll('.answer');
+  answers.forEach(answers => answers.classList.remove('fiftyfifty'));
   const correctAnswer = game.question.correctAnswer;
   console.log('correctAnswer',correctAnswer);
   if (selectedAnswer.classList.contains('selected')) {
@@ -165,18 +166,17 @@ function selectedLifeline({event,lifelines, game}){
 
   if (selectedLifeline.id === lifelines[0] && lifeline50){
     const incorrectAnswer = lifeline50({game});
-    // correctAnswer.classList.add('yellow');
+    // correctAnswer.classList.add('fiftyfifty');
     const allAnswers = document.querySelectorAll('.answer');
     allAnswers.forEach(answer => {
       if (answer.id === incorrectAnswer) {
-        answer.classList.add('yellow');
+        answer.classList.add('fiftyfifty');
       }
       if (answer.id === correctAnswer)
-        answer.classList.add('yellow');
+        answer.classList.add('fiftyfifty');
     });
     game.lifeline50 = false;
   }
-  
   if (selectedLifeline.id === lifelines[1]){
     return lifelinePhone();
   }
@@ -197,7 +197,7 @@ function selectedLifeline({event,lifelines, game}){
 //     console.log('The 50/50 lifeline is giving you', incorrectAnswer, 'and ', correctAnswer);
 //     const allAnswers = document.querySelectorAll('.answer');
 //     allAnswers.forEach(answer => {
-//       answer.classList.add('yellow');});
+//       answer.classList.add('fiftyfifty');});
 //   }
 //   if (selectedLifeline.id === lifelines[1]){
 //     return lifelinePhone();
@@ -311,7 +311,7 @@ async function initPage() {
   const panelProgressCount = 14;
   const answerCount = 0;
   const question = await getQuestion({level});
-  let lifeline50 = true;
+  const lifeline50 = true;
   const game = {
     level,
     // category,

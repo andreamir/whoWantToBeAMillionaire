@@ -55,9 +55,9 @@ body {
   height: 450px;
   width: 300px;
   background-color: red;
-  position: fixed;
+  /* position: fixed;
   top: 0;
-  right: 0;
+  right: 0; */
 }
 
 .round {
@@ -99,6 +99,6 @@ body {
   width: 100px;
 }
 
-.yellow{
+.fiftyfifty{
   background-color: deeppink;
 }
