@@ -2,6 +2,8 @@ async function getQuestion({level}) {
   const categories = ['html', 'css','javascript'];
   const category = categories[Math.floor(Math.random() * categories.length)];
   // console.log('Category en getQuestion', category);
+  // const answers = document.querySelectorAll('.answer');
+  // answers.forEach(answer => answer.classList.remove('hidden'));
   const response = await fetch(`https://quiz-api-ofkh.onrender.com/questions/random?level=${level}&category=${category}`);
   const formattedResponse = await response.json();
   console.log('async/await', formattedResponse);
@@ -61,26 +63,30 @@ function addProgress({answerProgress, game}){
     if (game.answerCount == answerProgress[i].innerText){
       answerProgress[i].classList.remove('selected');
       answerProgress[i].classList.add('correctAnswer');
+      answerProgress[i].classList.remove('fiftyfifty');
+      // answerProgress[i].classList.remove('hidden');
     }
   }
 }
 
 async function answerIsCorrect({ selectedAnswer, game }){
-  selectedAnswer.classList.remove('selected');
-  selectedAnswer.classList.add('correctAnswer');
-  game.answerCount++;
-  const answerProgress = document.querySelectorAll('.round');
-  await updateGameLevel({ game });
-  if (game.answerCount == 15){
-    return finishedGame({answerProgress});
+  if (selectedAnswer.innerText !== ''){
+    selectedAnswer.classList.remove('selected');
+    selectedAnswer.classList.add('correctAnswer');
+    game.answerCount++;
+    const answerProgress = document.querySelectorAll('.round');
+    await updateGameLevel({ game });
+    if (game.answerCount == 15){
+      return finishedGame({answerProgress});
+    }
+    addProgress({answerProgress, game});
+    // console.log('corrected answers',game.answerCount);
+    // console.log('level', game.level);
+    await getNewQuestion({game});
+    printQuestion({ game });
+    removeCorrectAnswer(),
+    printAnswers({ game });
   }
-  addProgress({answerProgress, game});
-  // console.log('corrected answers',game.answerCount);
-  // console.log('level', game.level);
-  await getNewQuestion({game});
-  printQuestion({ game });
-  removeCorrectAnswer(),
-  printAnswers({ game });
 }
 
 async function isCorrect({ selectedAnswer, correctAnswer, game}){
@@ -121,7 +127,7 @@ function selectedAnswer({event, game}) {
 //   return videoElement;
 // }
 
-function lifeline50({ game }) {
+function lifelineFifty({ game }) {
   const answers = Object.entries(game.question.answers);
   const correctAnswer = game.question.correctAnswer;
   console.log('correctAnswer', correctAnswer);
@@ -156,32 +162,48 @@ function lifelinePhone(){
   return console.log('You are tying to use the Phone a Friend lifeline');
 }
 
-function lifelineAudience(){
-  return console.log('You are tying to use the Ask the Audience lifeline');
+async function lifelineChange({game}){
+  await getNewQuestion({ game });
+
+  printQuestion({ game });
+  printAnswers({ game });
+
 }
 
 function selectedLifeline({event,lifelines, game}){
-  const selectedLifeline = event.target;
-  const correctAnswer = game.question.correctAnswer;
-
-  if (selectedLifeline.id === lifelines[0] && lifeline50){
-    const incorrectAnswer = lifeline50({game});
-    // correctAnswer.classList.add('fiftyfifty');
-    const allAnswers = document.querySelectorAll('.answer');
-    allAnswers.forEach(answer => {
-      if (answer.id === incorrectAnswer) {
-        answer.classList.add('fiftyfifty');
-      }
-      if (answer.id === correctAnswer)
-        answer.classList.add('fiftyfifty');
-    });
-    game.lifeline50 = false;
+  if (game.lifelineFifty){
+    game.lifelineFifty = false;
+    const selectedLifeline = event.target;
+    const correctAnswer = game.question.correctAnswer;
+    if (selectedLifeline.id === lifelines[0]){
+      const incorrectAnswer = lifelineFifty({game});
+      // correctAnswer.classList.add('fiftyfifty');
+      const allAnswers = document.querySelectorAll('.answer');
+      allAnswers.forEach(answer => {
+        if (answer.id === incorrectAnswer) {
+          answer.classList.add('fiftyfifty');
+        }
+        if (answer.id === correctAnswer){
+          answer.classList.add('fiftyfifty');}
+        // if (!answer.classList.contains('fiftyfifty')) {
+        //   answer.removeEventListener('click', (event) => selectedAnswer({ event, game }));
+        // }
+        // if (answer.id !== correctAnswer || answer.id !== incorrectAnswer){
+        //   answer.classList.add('noFifty');}
+      });
+      const clickHandler = (event) => selectedAnswer({ event, game });
+      allAnswers.forEach(answer => {
+        if (!answer.classList.contains('fiftyfifty')) {
+          answer.innerText = '';
+          answer.addEventListener('click', clickHandler);
+        }});
+    }
   }
   if (selectedLifeline.id === lifelines[1]){
     return lifelinePhone();
   }
   if (selectedLifeline.id === lifelines[2]){
-    lifelineAudience();
+    lifelineChange({game});
   }
 }
 
@@ -193,7 +215,7 @@ function selectedLifeline({event,lifelines, game}){
 //   console.log('validAnswer',validAnswer);
 //   console.log(validAnswer, correctAnswer);
 //   if (selectedLifeline.id === lifelines[0]){
-//     const incorrectAnswer = lifeline50({game});
+//     const incorrectAnswer = lifelineFifty({game});
 //     console.log('The 50/50 lifeline is giving you', incorrectAnswer, 'and ', correctAnswer);
 //     const allAnswers = document.querySelectorAll('.answer');
 //     allAnswers.forEach(answer => {
@@ -311,14 +333,16 @@ async function initPage() {
   const panelProgressCount = 14;
   const answerCount = 0;
   const question = await getQuestion({level});
-  const lifeline50 = true;
+  const lifelineFifty = true;
+  const lifelineChange = true;
   const game = {
     level,
     // category,
     question,
     answerCount,
     panelProgressCount,
-    lifeline50,
+    lifelineFifty,
+    lifelineChange
   };
   createPage({game});
   printQuestion({game});

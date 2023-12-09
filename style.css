@@ -55,9 +55,9 @@ body {
   height: 450px;
   width: 300px;
   background-color: red;
-  /* position: fixed;
+ position: fixed;
   top: 0;
-  right: 0; */
+  right: 0;
 }
 
 .round {
@@ -101,4 +101,12 @@ body {
 
 .fiftyfifty{
   background-color: deeppink;
+}
+
+.noFifty{
+  color: white;
+}
+
+.hidden{
+  display: none;
 }
