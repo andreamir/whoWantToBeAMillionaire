@@ -18,28 +18,38 @@ function printQuestion({ game }) {
   document.querySelector('.question').innerText = questionDescription;
 
 }
-function shuffleAnswers({answers}) {
-  const shuffledAnswers = [...answers];
+// function shuffleAnswers({answers}) {
+//   const shuffledAnswers = [...answers];
 
-  for (let i = shuffledAnswers.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledAnswers[i], shuffledAnswers[j]] = [shuffledAnswers[j], shuffledAnswers[i]];
-  }
+//   for (let i = shuffledAnswers.length - 1; i > 0; i--) {
+//     const j = Math.floor(Math.random() * (i + 1));
+//     [shuffledAnswers[i], shuffledAnswers[j]] = [shuffledAnswers[j], shuffledAnswers[i]];
+//   }
 
-  return shuffledAnswers;
-}
+//   return shuffledAnswers;
+// }
+
+// function printAnswers({ game }) {
+//   const answers = Object.values(game.question.answers);
+//   const shuffledAnswers = shuffleAnswers({answers});
+//   const answerElements = document.querySelectorAll('.answer');
+
+//   for (let i = 0; i < answerElements.length; i++) {
+//     const answerElement = answerElements[i];
+//     answerElement.innerText = shuffledAnswers[i];
+//   }
+
+//   return shuffledAnswers;
+// }
 
 function printAnswers({ game }) {
   const answers = Object.values(game.question.answers);
-  const shuffledAnswers = shuffleAnswers({answers});
   const answerElements = document.querySelectorAll('.answer');
-
   for (let i = 0; i < answerElements.length; i++) {
     const answerElement = answerElements[i];
-    answerElement.innerText = shuffledAnswers[i];
+    answerElement.innerText = answers[i];
   }
-
-  return shuffledAnswers;
+  return answers;
 }
 
 async function updateGameLevel({ game }) {
@@ -51,13 +61,17 @@ async function updateGameLevel({ game }) {
   }
 }
 
+function blockedLifelines({game}){
+  game.lifeline50 = false;
+  game.lifelineChange = false;
+  game.lifelinePhone = false;
+}
+
 function answerIsIncorrect({ selectedAnswer, game }){
   console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
   game.question.question = `Game over. You have answered ${game.answerCount} questions correctly.`;
   game.question.description = `Game over. You have answered ${game.answerCount} questions correctly.`;
-  game.lifeline50 = false;
-  game.lifelineChange = false;
-  game.lifelinePhone = false;
+  blockedLifelines({game});
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('incorrectAnswer');
   const correctAnswerId = game.question.correctAnswer;
@@ -69,8 +83,9 @@ async function getNewQuestion({game}){
   game.question = newQuestion;
 }
 
-function finishedGame({answerProgress}){
+function finishedGame({answerProgress, game}){
   answerProgress[0].classList.add('correctAnswer');
+  blockedLifelines({game});
   console.log('YOU WON!!');
 }
 
@@ -99,7 +114,7 @@ async function answerIsCorrect({ selectedAnswer, game }){
   const answerProgress = document.querySelectorAll('.round');
   await updateGameLevel({ game });
   if (game.answerCount == 15){
-    return finishedGame({answerProgress});
+    return finishedGame({answerProgress, game});
   }
   addProgress({answerProgress, game});
   // console.log('corrected answers',game.answerCount);
@@ -137,9 +152,9 @@ function selectedAnswer({event, game}) {
   if (validAnswer || invalidAnswer) {
     return;
   }
-  // if (!selectedAnswer.innerText.trim()) {
-  //   return;
-  // }
+  if (!selectedAnswer.innerText.trim()) {
+    return;
+  }
   const answers = document.querySelectorAll('.answer');
   answers.forEach(answers => answers.classList.remove('fiftyfifty'));
   const correctAnswer = game.question.correctAnswer;
