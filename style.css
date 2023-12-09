@@ -100,7 +100,7 @@ body {
 }
 
 .fiftyfifty{
-  background-color: deeppink;
+  background-color: bisque;
 }
 
 .noFifty{
@@ -109,4 +109,7 @@ body {
 
 .hidden{
   display: none;
+}
+.used{
+background-color: blue;
 }

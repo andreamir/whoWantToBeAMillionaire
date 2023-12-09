@@ -15,15 +15,28 @@ function printQuestion({ game }) {
   document.querySelector('.question').innerText = questionDescription;
 
 }
+function shuffleAnswers({answers}) {
+  const shuffledAnswers = [...answers];
+
+  for (let i = shuffledAnswers.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledAnswers[i], shuffledAnswers[j]] = [shuffledAnswers[j], shuffledAnswers[i]];
+  }
+
+  return shuffledAnswers;
+}
 
 function printAnswers({ game }) {
   const answers = Object.values(game.question.answers);
+  const shuffledAnswers = shuffleAnswers({answers});
   const answerElements = document.querySelectorAll('.answer');
+
   for (let i = 0; i < answerElements.length; i++) {
     const answerElement = answerElements[i];
-    answerElement.innerText = answers[i];
+    answerElement.innerText = shuffledAnswers[i];
   }
-  return answers;
+
+  return shuffledAnswers;
 }
 
 async function updateGameLevel({ game }) {
@@ -37,6 +50,9 @@ async function updateGameLevel({ game }) {
 
 function answerIsIncorrect({ selectedAnswer, game }){
   console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
+  game.lifeline50 = false;
+  game.lifelineChange = false;
+  game.lifelinePhone = false;
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('incorrectAnswer');
   const correctAnswerId = game.question.correctAnswer;
@@ -118,15 +134,6 @@ function selectedAnswer({event, game}) {
   selectedAnswer.classList.add('selected');
 }
 
-// function gifResponse(){
-//   const videoElement = document.createElement('video');
-//   videoElement.url = 'https://i.giphy.com/5bDeJPwBfNTENexhEQ.mp4';
-//   videoElement.width = 640; // Ancho del video
-//   videoElement.height = 360; // Alto del video
-//   videoElement.controls = true; // Mostrar controles del reproductor
-//   return videoElement;
-// }
-
 function handleIncorrectAnswerForFifty({ game }) {
   const answers = Object.entries(game.question.answers);
   const correctAnswer = game.question.correctAnswer;
@@ -145,16 +152,17 @@ function handleIncorrectAnswerForFifty({ game }) {
 }
 
 function lifelineFifty({game, correctAnswer}){
+  const usedLifeline = document.getElementById('50/50');
+  usedLifeline.classList.add('used');
   const incorrectAnswer = handleIncorrectAnswerForFifty({game});
   // correctAnswer.classList.add('fiftyfifty');
   const allAnswers = document.querySelectorAll('.answer');
-  allAnswers.forEach(answer => {
-    if (answer.id === incorrectAnswer) {
-      answer.classList.add('fiftyfifty');
-    }
-    if (answer.id === correctAnswer){
-      answer.classList.add('fiftyfifty');}
-  });
+  const incorrectAnswerElement = document.getElementById(incorrectAnswer);
+  incorrectAnswerElement.classList.add('fiftyfifty');
+
+  const correctAnswerElement = document.getElementById(correctAnswer);
+  correctAnswerElement.classList.add('fiftyfifty');
+
   game.lifeline50 = false;
   const clickHandler = (event) => selectedAnswer({ event, game });
   allAnswers.forEach(answer => {
@@ -163,19 +171,6 @@ function lifelineFifty({game, correctAnswer}){
       answer.addEventListener('click', clickHandler);
     }});
 
-  // const correctIndex = answers.indexOf(correctAnswer);
-  // console.log('correctIndex', correctIndex);
-  // const incorrectAnswers = answers.filter(answer => answer !== correctAnswer);
-  // const correctIndex1 = answers.findIndex(entry => entry[0] === correctAnswer);
-  // console.log('incorrectAnswers', incorrectAnswers);
-  // console.log('correctIndex', correctIndex1);
-  // for (let i = 0; i < answers.length; i++) {
-  //  if (answers[i].id == correctAnswer){
-  //   answers
-  //  }
-  //   answers.
-  // console.log('correct answer from lifeline is:', correctAnswer);
-
 }
 
 function lifelinePhone(){
@@ -183,10 +178,13 @@ function lifelinePhone(){
 }
 
 async function lifelineChange({game}){
+  const usedLifeline = document.getElementById('Change');
+  usedLifeline.classList.add('used');
   await getNewQuestion({ game });
 
   printQuestion({ game });
   printAnswers({ game });
+  game.lifelineChange = false;
 
 }
 
@@ -195,42 +193,17 @@ function selectedLifeline({event,lifelines, game}){
   const correctAnswer = game.question.correctAnswer;
   if (selectedLifeline.id === lifelines[0] && game.lifeline50){
     lifelineFifty({game, correctAnswer});
+
   }
   if (selectedLifeline.id === lifelines[1]){
-    return lifelinePhone();
+    lifelines[1].classList.add('used');
+    lifelinePhone();
   }
-  if (selectedLifeline.id === lifelines[2]){
+  if (selectedLifeline.id === lifelines[2] && game.lifelineChange){
     lifelineChange({game});
   }
 }
 
-
-// function selectedLifeline({event,lifelines, game}){
-//   const selectedLifeline = event.target;
-//   const correctAnswer = game.question.correctAnswer;
-//   const validAnswer = document.querySelectorAll('.answer');
-//   console.log('validAnswer',validAnswer);
-//   console.log(validAnswer, correctAnswer);
-//   if (selectedLifeline.id === lifelines[0]){
-//     const incorrectAnswer = lifeline50({game});
-//     console.log('The 50/50 lifeline is giving you', incorrectAnswer, 'and ', correctAnswer);
-//     const allAnswers = document.querySelectorAll('.answer');
-//     allAnswers.forEach(answer => {
-//       answer.classList.add('fiftyfifty');});
-//   }
-//   if (selectedLifeline.id === lifelines[1]){
-//     return lifelinePhone();
-//   }
-//   if (selectedLifeline.id === lifelines[2]){
-//     lifelineAudience();
-//   }
-// }
-
-// function createVideoPanel(){
-//   const gif = document.createElement('div');
-//   gif.classList.add('gif');
-//   return gif;
-// }
 
 function createPanel(){
   const panel = document.createElement('div');
@@ -300,11 +273,6 @@ function createPage({game}) {
   const lifelines = createLifelines({game});
   container.appendChild(lifelines);
 
-  // const gifResponse = createVideoPanel();
-  // container.appendChild(gifResponse);
-
-  // const videoResponse = gifResponse();
-  // gifResponse.appendChild(videoResponse);
 
   const panel = createPanel();
   container.appendChild(panel);
@@ -332,6 +300,7 @@ async function initPage() {
   const question = await getQuestion({level});
   const lifeline50 = true;
   const lifelineChange = true;
+  const lifelinePhone = true;
   const game = {
     level,
     // category,
@@ -339,7 +308,8 @@ async function initPage() {
     answerCount,
     panelProgressCount,
     lifeline50,
-    lifelineChange
+    lifelineChange,
+    lifelinePhone,
   };
   createPage({game});
   printQuestion({game});
