@@ -127,7 +127,7 @@ function selectedAnswer({event, game}) {
 //   return videoElement;
 // }
 
-function lifelineFifty({ game }) {
+function handleIncorrectAnswerForFifty({ game }) {
   const answers = Object.entries(game.question.answers);
   const correctAnswer = game.question.correctAnswer;
   console.log('correctAnswer', correctAnswer);
@@ -142,6 +142,26 @@ function lifelineFifty({ game }) {
   console.log('You are trying to use the 50/50 lifeline');
   return selectedIncorrectAnswer[0];
 
+}
+
+function lifelineFifty({game, correctAnswer}){
+  const incorrectAnswer = handleIncorrectAnswerForFifty({game});
+  // correctAnswer.classList.add('fiftyfifty');
+  const allAnswers = document.querySelectorAll('.answer');
+  allAnswers.forEach(answer => {
+    if (answer.id === incorrectAnswer) {
+      answer.classList.add('fiftyfifty');
+    }
+    if (answer.id === correctAnswer){
+      answer.classList.add('fiftyfifty');}
+  });
+  game.lifeline50 = false;
+  const clickHandler = (event) => selectedAnswer({ event, game });
+  allAnswers.forEach(answer => {
+    if (!answer.classList.contains('fiftyfifty')) {
+      answer.innerText = '';
+      answer.addEventListener('click', clickHandler);
+    }});
 
   // const correctIndex = answers.indexOf(correctAnswer);
   // console.log('correctIndex', correctIndex);
@@ -171,33 +191,10 @@ async function lifelineChange({game}){
 }
 
 function selectedLifeline({event,lifelines, game}){
-  if (game.lifelineFifty){
-    game.lifelineFifty = false;
-    const selectedLifeline = event.target;
-    const correctAnswer = game.question.correctAnswer;
-    if (selectedLifeline.id === lifelines[0]){
-      const incorrectAnswer = lifelineFifty({game});
-      // correctAnswer.classList.add('fiftyfifty');
-      const allAnswers = document.querySelectorAll('.answer');
-      allAnswers.forEach(answer => {
-        if (answer.id === incorrectAnswer) {
-          answer.classList.add('fiftyfifty');
-        }
-        if (answer.id === correctAnswer){
-          answer.classList.add('fiftyfifty');}
-        // if (!answer.classList.contains('fiftyfifty')) {
-        //   answer.removeEventListener('click', (event) => selectedAnswer({ event, game }));
-        // }
-        // if (answer.id !== correctAnswer || answer.id !== incorrectAnswer){
-        //   answer.classList.add('noFifty');}
-      });
-      const clickHandler = (event) => selectedAnswer({ event, game });
-      allAnswers.forEach(answer => {
-        if (!answer.classList.contains('fiftyfifty')) {
-          answer.innerText = '';
-          answer.addEventListener('click', clickHandler);
-        }});
-    }
+  const selectedLifeline = event.target;
+  const correctAnswer = game.question.correctAnswer;
+  if (selectedLifeline.id === lifelines[0] && game.lifeline50){
+    lifelineFifty({game, correctAnswer});
   }
   if (selectedLifeline.id === lifelines[1]){
     return lifelinePhone();
@@ -215,7 +212,7 @@ function selectedLifeline({event,lifelines, game}){
 //   console.log('validAnswer',validAnswer);
 //   console.log(validAnswer, correctAnswer);
 //   if (selectedLifeline.id === lifelines[0]){
-//     const incorrectAnswer = lifelineFifty({game});
+//     const incorrectAnswer = lifeline50({game});
 //     console.log('The 50/50 lifeline is giving you', incorrectAnswer, 'and ', correctAnswer);
 //     const allAnswers = document.querySelectorAll('.answer');
 //     allAnswers.forEach(answer => {
@@ -333,7 +330,7 @@ async function initPage() {
   const panelProgressCount = 14;
   const answerCount = 0;
   const question = await getQuestion({level});
-  const lifelineFifty = true;
+  const lifeline50 = true;
   const lifelineChange = true;
   const game = {
     level,
@@ -341,7 +338,7 @@ async function initPage() {
     question,
     answerCount,
     panelProgressCount,
-    lifelineFifty,
+    lifeline50,
     lifelineChange
   };
   createPage({game});
