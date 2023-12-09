@@ -1,3 +1,6 @@
+// -- COMENTARIOS IMPORTANTES --
+// log async/await getQuestion
+
 async function getQuestion({level}) {
   const categories = ['html', 'css','javascript'];
   const category = categories[Math.floor(Math.random() * categories.length)];
@@ -6,7 +9,7 @@ async function getQuestion({level}) {
   // answers.forEach(answer => answer.classList.remove('hidden'));
   const response = await fetch(`https://quiz-api-ofkh.onrender.com/questions/random?level=${level}&category=${category}`);
   const formattedResponse = await response.json();
-  console.log('async/await', formattedResponse);
+  // console.log('async/await', formattedResponse);
   return formattedResponse;
 }
 
@@ -50,6 +53,8 @@ async function updateGameLevel({ game }) {
 
 function answerIsIncorrect({ selectedAnswer, game }){
   console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
+  game.question.question = `Game over. You have answered ${game.answerCount} questions correctly.`;
+  game.question.description = `Game over. You have answered ${game.answerCount} questions correctly.`;
   game.lifeline50 = false;
   game.lifelineChange = false;
   game.lifelinePhone = false;
@@ -80,39 +85,48 @@ function addProgress({answerProgress, game}){
       answerProgress[i].classList.remove('selected');
       answerProgress[i].classList.add('correctAnswer');
       answerProgress[i].classList.remove('fiftyfifty');
+      answerProgress[i].classList.remove('phoneFriend');
       // answerProgress[i].classList.remove('hidden');
     }
   }
 }
 
 async function answerIsCorrect({ selectedAnswer, game }){
-  if (selectedAnswer.innerText !== ''){
-    selectedAnswer.classList.remove('selected');
-    selectedAnswer.classList.add('correctAnswer');
-    game.answerCount++;
-    const answerProgress = document.querySelectorAll('.round');
-    await updateGameLevel({ game });
-    if (game.answerCount == 15){
-      return finishedGame({answerProgress});
-    }
-    addProgress({answerProgress, game});
-    // console.log('corrected answers',game.answerCount);
-    // console.log('level', game.level);
-    await getNewQuestion({game});
-    printQuestion({ game });
-    removeCorrectAnswer(),
-    printAnswers({ game });
+  console.log(selectedAnswer.innerText);
+  selectedAnswer.classList.remove('selected');
+  selectedAnswer.classList.add('correctAnswer');
+  game.answerCount++;
+  const answerProgress = document.querySelectorAll('.round');
+  await updateGameLevel({ game });
+  if (game.answerCount == 15){
+    return finishedGame({answerProgress});
   }
+  addProgress({answerProgress, game});
+  // console.log('corrected answers',game.answerCount);
+  // console.log('level', game.level);
+  await getNewQuestion({game});
+  printQuestion({ game });
+  removeCorrectAnswer(),
+  printAnswers({ game });
 }
 
 async function isCorrect({ selectedAnswer, correctAnswer, game}){
+  const allAnswers = document.querySelectorAll('.answer');
+  allAnswers.forEach(answer => answer.classList.remove('phoneFriend'));
+  let hasInnerText = false;
 
-  if (selectedAnswer.id === correctAnswer){
-    answerIsCorrect({ selectedAnswer, correctAnswer, game });
-  } else {
-    answerIsIncorrect({ selectedAnswer, game });
-  }
-}
+  allAnswers.forEach(answer => {
+    if (answer.innerText.trim() !== '') {
+      hasInnerText = true;
+    }
+  });
+  if (hasInnerText) {
+    if (selectedAnswer.id === correctAnswer){
+      answerIsCorrect({ selectedAnswer, correctAnswer, game });
+    } else {
+      answerIsIncorrect({ selectedAnswer, game });
+    }
+  }}
 
 function selectedAnswer({event, game}) {
   const selectedAnswer = event.target;
@@ -123,6 +137,9 @@ function selectedAnswer({event, game}) {
   if (validAnswer || invalidAnswer) {
     return;
   }
+  // if (!selectedAnswer.innerText.trim()) {
+  //   return;
+  // }
   const answers = document.querySelectorAll('.answer');
   answers.forEach(answers => answers.classList.remove('fiftyfifty'));
   const correctAnswer = game.question.correctAnswer;
@@ -164,17 +181,49 @@ function lifelineFifty({game, correctAnswer}){
   correctAnswerElement.classList.add('fiftyfifty');
 
   game.lifeline50 = false;
+
   const clickHandler = (event) => selectedAnswer({ event, game });
+
   allAnswers.forEach(answer => {
     if (!answer.classList.contains('fiftyfifty')) {
-      answer.innerText = '';
       answer.addEventListener('click', clickHandler);
+      answer.innerText = '';
     }});
 
 }
 
-function lifelinePhone(){
-  return console.log('You are tying to use the Phone a Friend lifeline');
+function lifelinePhone({game, correctAnswer}){
+  const usedLifeline = document.getElementById('Phone');
+  usedLifeline.classList.add('used');
+  game.lifelinePhone = false;
+  const probabilities = {
+    correctAnswer: 0.7,
+    otherAnswers: 0.1,
+  };
+  const randomNumber = Math.random();
+  if (randomNumber <= probabilities.correctAnswer) {
+    const phoneSelected = document.getElementById(correctAnswer);
+    phoneSelected.classList.add('phoneFriend');
+    console.log('Phone a Friend: The correct answer is', correctAnswer);
+  } else {
+    const answersEntries = Object.entries(game.question.answers);
+    const incorrectAnswers = answersEntries.filter(entry => entry[0] !== correctAnswer);
+    console.log(incorrectAnswers, 'incorrectAnswers');
+    const randomIndex = Math.floor(Math.random() * incorrectAnswers.length);
+    const selectedIncorrectAnswer = incorrectAnswers[randomIndex];
+    const phoneSelected = document.getElementById(selectedIncorrectAnswer[0]);
+    phoneSelected.classList.add('phoneFriend');
+    console.log(phoneSelected);
+    console.log('Phone a Friend: The correct answer is not', selectedIncorrectAnswer);
+
+    // const incorrectAnswers = Object.values(game.question.answers).filter(answer => answer.id !== correctAnswer);
+    // console.log(incorrectAnswers, 'incorrectAnswers');
+    // const randomIndex = Math.floor(Math.random() * incorrectAnswers.length);
+    // const selectedIncorrectAnswer = incorrectAnswers[randomIndex];
+    // const phoneSelected = document.getElementById(incorrectAnswers[randomIndex]);
+    // console.log(phoneSelected);
+    // console.log('Phone a Friend: The correct answer is not', selectedIncorrectAnswer);
+  }
 }
 
 async function lifelineChange({game}){
@@ -195,9 +244,8 @@ function selectedLifeline({event,lifelines, game}){
     lifelineFifty({game, correctAnswer});
 
   }
-  if (selectedLifeline.id === lifelines[1]){
-    lifelines[1].classList.add('used');
-    lifelinePhone();
+  if (selectedLifeline.id === lifelines[1] && game.lifelinePhone){
+    lifelinePhone({game, correctAnswer});
   }
   if (selectedLifeline.id === lifelines[2] && game.lifelineChange){
     lifelineChange({game});
