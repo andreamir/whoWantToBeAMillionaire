@@ -16,8 +16,10 @@ async function getQuestion({level}) {
 function printQuestion({ game }) {
   const questionDescription = game.question.description;
   document.querySelector('.question').innerText = questionDescription;
+  actualRound({game});
 
 }
+
 // function shuffleAnswers({answers}) {
 //   const shuffledAnswers = [...answers];
 
@@ -70,21 +72,37 @@ function blockedLifelines({game}){
 function answerIsIncorrect({ selectedAnswer, game }){
   console.log('EntroLifeline answerIsIncorrect');
   console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
-  game.question.question = `Game over. You have answered ${game.answerCount} questions correctly.`;
-  game.question.description = `Game over. You have answered ${game.answerCount} questions correctly.`;
+  // game.question.question = `Game over. You have answered ${game.answerCount} questions correctly.`;
+  // game.question.description = `Game over. You have answered ${game.answerCount} questions correctly.`;
   blockedLifelines({game});
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('incorrectAnswer');
   const correctAnswerId = game.question.correctAnswer;
   const correctAnswerElement = document.getElementById(correctAnswerId);
   correctAnswerElement.classList.add('correctAnswer');
-}
+
+  const rounds = document.querySelectorAll('.round');
+  for (let i = 0; i < rounds.length; i++) {
+    const roundElement = rounds[i];
+
+    if (roundElement.classList.contains('yellow')) {
+      roundElement.classList.remove('yellow');
+      roundElement.classList.add('incorrectAnswer');
+    }
+  }}
 async function getNewQuestion({game}){
   const newQuestion = await getQuestion({level:game.level, category:game.category});
   game.question = newQuestion;
-}
+  const rounds = document.querySelectorAll('.round');
+  const hasCorrectAnswer = Array.from(rounds).some(round => round.classList.contains('correctAnswer'));
 
+  if (hasCorrectAnswer) {
+    game.actualRound++;
+    actualRound({ game });
+  }
+}
 function finishedGame({answerProgress, game}){
+  console.log('finishedgame');
   answerProgress[0].classList.add('correctAnswer');
   blockedLifelines({game});
   console.log('YOU WON!!');
@@ -97,12 +115,25 @@ function removeCorrectAnswer(){
 
 function addProgress({answerProgress, game}){
   for (let i = 0; i < answerProgress.length; i++) {
+    console.log(`game.answerCount ${game.answerCount} and answersProgress.innertext ${answerProgress[i].innerText}`);
     if (game.answerCount == answerProgress[i].innerText){
       answerProgress[i].classList.remove('selected');
       answerProgress[i].classList.add('correctAnswer');
-      // answerProgress[i].classList.remove('fiftyfifty');
-      // answerProgress[i].classList.remove('phoneFriend');
-      // answerProgress[i].classList.remove('hidden');
+    }
+  }
+}
+
+function actualRound({game}){
+  const rounds = document.querySelectorAll('.round');
+  console.log(`rounds from actualRound ${rounds}`);
+  console.log(rounds.length);
+  for (let i = 0; i < rounds.length; i++) {
+    if (game.actualRound == rounds[i].id){
+      console.log(`game.actualRound = ${game.actualRound} game.roundsId = ${rounds[i].id}`);
+      rounds[i].classList.add('yellow');
+    }
+    else {
+      rounds[i].classList.remove('yellow');
     }
   }
 }
@@ -118,9 +149,8 @@ async function answerIsCorrect({ selectedAnswer, game }){
   if (game.answerCount == 15){
     return finishedGame({answerProgress, game});
   }
+  // console.log('answerProgress fron answerisCorrect',answerProgress);
   addProgress({answerProgress, game});
-  // console.log('corrected answers',game.answerCount);
-  // console.log('level', game.level);
   await getNewQuestion({game});
   printQuestion({ game });
   removeCorrectAnswer(),
@@ -128,7 +158,7 @@ async function answerIsCorrect({ selectedAnswer, game }){
 }
 
 async function isCorrect({ selectedAnswer, correctAnswer, game}){
-  console.log('EntroLifeline isCorrect');
+  // console.log('EntroLifeline isCorrect');
   const allAnswers = document.querySelectorAll('.answer');
   allAnswers.forEach(answer => answer.classList.remove('phoneFriend'));
   let hasInnerText = false;
@@ -147,7 +177,7 @@ async function isCorrect({ selectedAnswer, correctAnswer, game}){
   }}
 
 function selectedAnswer({event, game}) {
-  console.log('EntroLifeline selectedAnswer');
+  // console.log('EntroLifeline selectedAnswer');
   const selectedAnswer = event.target;
   const validAnswer = document.querySelector('.answer.correctAnswer');
   const invalidAnswer = document.querySelector('.answer.incorrectAnswer');
@@ -190,7 +220,7 @@ function handleIncorrectAnswerForFifty({ game }) {
 }
 
 function lifelineFifty({game, correctAnswer}){
-  console.log('Entro en lifelineFifty');
+  // console.log('Entro en lifelineFifty');
   const usedLifeline = document.getElementById('50/50');
   usedLifeline.classList.add('used');
   const incorrectAnswer = handleIncorrectAnswerForFifty({game});
@@ -319,15 +349,17 @@ function createLifelines({game}){
   return lifelinePanel;
 }
 
-function createPanelProgress(){
+function createPanelProgress({game}){
   const panelProgress = document.createElement('div');
   panelProgress.classList.add('panelProgress');
   for (let i = 15; i > 0; i--) {
     const round = document.createElement('div');
     round.classList.add('round');
     round.innerText = i;
+    round.id = i;
     panelProgress.appendChild(round);
   }
+  actualRound({game});
   return panelProgress;
 }
 
@@ -349,7 +381,7 @@ function createPage({game}) {
   const answersPanel = createAnswersPanel({game});
   panel.appendChild(answersPanel);
 
-  const panelProgress = createPanelProgress();
+  const panelProgress = createPanelProgress({game});
   container.appendChild(panelProgress);
 
   root.appendChild(container);
@@ -362,6 +394,7 @@ async function initPage() {
   // const category = 'html';
   const panelProgressCount = 14;
   const answerCount = 0;
+  const actualRound = 1;
   const question = await getQuestion({level});
   const lifeline50 = true;
   const lifelineChange = true;
@@ -375,6 +408,7 @@ async function initPage() {
     lifeline50,
     lifelineChange,
     lifelinePhone,
+    actualRound,
   };
   createPage({game});
   printQuestion({game});
