@@ -68,6 +68,7 @@ function blockedLifelines({game}){
 }
 
 function answerIsIncorrect({ selectedAnswer, game }){
+  console.log('EntroLifeline answerIsIncorrect');
   console.log(`Game over. You have answered ${game.answerCount} questions correctly.`);
   game.question.question = `Game over. You have answered ${game.answerCount} questions correctly.`;
   game.question.description = `Game over. You have answered ${game.answerCount} questions correctly.`;
@@ -99,14 +100,15 @@ function addProgress({answerProgress, game}){
     if (game.answerCount == answerProgress[i].innerText){
       answerProgress[i].classList.remove('selected');
       answerProgress[i].classList.add('correctAnswer');
-      answerProgress[i].classList.remove('fiftyfifty');
-      answerProgress[i].classList.remove('phoneFriend');
+      // answerProgress[i].classList.remove('fiftyfifty');
+      // answerProgress[i].classList.remove('phoneFriend');
       // answerProgress[i].classList.remove('hidden');
     }
   }
 }
 
 async function answerIsCorrect({ selectedAnswer, game }){
+  console.log('EntroLifeline answerIsCorrect');
   console.log(selectedAnswer.innerText);
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('correctAnswer');
@@ -126,6 +128,7 @@ async function answerIsCorrect({ selectedAnswer, game }){
 }
 
 async function isCorrect({ selectedAnswer, correctAnswer, game}){
+  console.log('EntroLifeline isCorrect');
   const allAnswers = document.querySelectorAll('.answer');
   allAnswers.forEach(answer => answer.classList.remove('phoneFriend'));
   let hasInnerText = false;
@@ -144,64 +147,63 @@ async function isCorrect({ selectedAnswer, correctAnswer, game}){
   }}
 
 function selectedAnswer({event, game}) {
+  console.log('EntroLifeline selectedAnswer');
   const selectedAnswer = event.target;
-  // const answerProgress = document.querySelectorAll('.round');
-  // answerProgress[13].classList.add('selected');
   const validAnswer = document.querySelector('.answer.correctAnswer');
   const invalidAnswer = document.querySelector('.answer.incorrectAnswer');
-  if (validAnswer || invalidAnswer) {
+
+  if (validAnswer || invalidAnswer || selectedAnswer.classList.contains('correctAnswer') || selectedAnswer.classList.contains('incorrectAnswer')) {
     return;
   }
   if (!selectedAnswer.innerText.trim()) {
     return;
   }
+
   const answers = document.querySelectorAll('.answer');
   answers.forEach(answers => answers.classList.remove('fiftyfifty'));
   const correctAnswer = game.question.correctAnswer;
-  console.log('correctAnswer',correctAnswer);
+
   if (selectedAnswer.classList.contains('selected')) {
-    return isCorrect({selectedAnswer, correctAnswer, game});
+    isCorrect({selectedAnswer, correctAnswer, game});
   }
-  answers.forEach(answers => answers.classList.remove('selected'));
-  selectedAnswer.classList.add('selected');
+  else {
+    answers.forEach(answers => answers.classList.remove('selected'));
+    selectedAnswer.classList.add('selected');
+  }
 }
 
 function handleIncorrectAnswerForFifty({ game }) {
   const answers = Object.entries(game.question.answers);
   const correctAnswer = game.question.correctAnswer;
-  console.log('correctAnswer', correctAnswer);
-  console.log('answers entries', answers);
+  // console.log('correctAnswer', correctAnswer);
+  // console.log('answers entries', answers);
   const incorrectAnswers = answers.filter(entry => entry[0] !== correctAnswer);
-  console.log('incorrectAnswers', incorrectAnswers);
+  // console.log('incorrectAnswers', incorrectAnswers);
   const randomIndex = Math.floor(Math.random() * incorrectAnswers.length);
   const selectedIncorrectAnswer = incorrectAnswers[randomIndex];
-  console.log('selectedIncorrectAnswer', selectedIncorrectAnswer);
-  console.log(selectedIncorrectAnswer[0]);
-  console.log(correctAnswer);
-  console.log('You are trying to use the 50/50 lifeline');
+  // console.log('selectedIncorrectAnswer', selectedIncorrectAnswer);
+  // console.log(selectedIncorrectAnswer[0]);
+  // console.log(correctAnswer);
+  // console.log('You are trying to use the 50/50 lifeline');
   return selectedIncorrectAnswer[0];
 
 }
 
 function lifelineFifty({game, correctAnswer}){
+  console.log('Entro en lifelineFifty');
   const usedLifeline = document.getElementById('50/50');
   usedLifeline.classList.add('used');
   const incorrectAnswer = handleIncorrectAnswerForFifty({game});
-  // correctAnswer.classList.add('fiftyfifty');
   const allAnswers = document.querySelectorAll('.answer');
   const incorrectAnswerElement = document.getElementById(incorrectAnswer);
   incorrectAnswerElement.classList.add('fiftyfifty');
-
   const correctAnswerElement = document.getElementById(correctAnswer);
   correctAnswerElement.classList.add('fiftyfifty');
 
   game.lifeline50 = false;
 
-  const clickHandler = (event) => selectedAnswer({ event, game });
-
   allAnswers.forEach(answer => {
     if (!answer.classList.contains('fiftyfifty')) {
-      answer.addEventListener('click', clickHandler);
       answer.innerText = '';
     }});
 
