@@ -115,7 +115,7 @@ function removeCorrectAnswer(){
 
 function addProgress({answerProgress, game}){
   for (let i = 0; i < answerProgress.length; i++) {
-    console.log(`game.answerCount ${game.answerCount} and answersProgress.innertext ${answerProgress[i].innerText}`);
+    // console.log(`game.answerCount ${game.answerCount} and answersProgress.innertext ${answerProgress[i].innerText}`);
     if (game.answerCount == answerProgress[i].innerText){
       answerProgress[i].classList.remove('selected');
       answerProgress[i].classList.add('correctAnswer');
@@ -125,8 +125,8 @@ function addProgress({answerProgress, game}){
 
 function actualRound({game}){
   const rounds = document.querySelectorAll('.round');
-  console.log(`rounds from actualRound ${rounds}`);
-  console.log(rounds.length);
+  // console.log(`rounds from actualRound ${rounds}`);
+  // console.log(rounds.length);
   for (let i = 0; i < rounds.length; i++) {
     if (game.actualRound == rounds[i].id){
       console.log(`game.actualRound = ${game.actualRound} game.roundsId = ${rounds[i].id}`);
@@ -139,8 +139,8 @@ function actualRound({game}){
 }
 
 async function answerIsCorrect({ selectedAnswer, game }){
-  console.log('EntroLifeline answerIsCorrect');
-  console.log(selectedAnswer.innerText);
+  // console.log('EntroLifeline answerIsCorrect');
+  // console.log(selectedAnswer.innerText);
   selectedAnswer.classList.remove('selected');
   selectedAnswer.classList.add('correctAnswer');
   game.answerCount++;
@@ -242,6 +242,7 @@ function lifelineFifty({game, correctAnswer}){
 function lifelinePhone({game, correctAnswer}){
   const usedLifeline = document.getElementById('Phone');
   usedLifeline.classList.add('used');
+  // console.log('correctanswer', correctAnswer);
   game.lifelinePhone = false;
   const probabilities = {
     correctAnswer: 0.7,
@@ -255,13 +256,13 @@ function lifelinePhone({game, correctAnswer}){
   } else {
     const answersEntries = Object.entries(game.question.answers);
     const incorrectAnswers = answersEntries.filter(entry => entry[0] !== correctAnswer);
-    console.log(incorrectAnswers, 'incorrectAnswers');
+    // console.log(incorrectAnswers, 'incorrectAnswers');
     const randomIndex = Math.floor(Math.random() * incorrectAnswers.length);
     const selectedIncorrectAnswer = incorrectAnswers[randomIndex];
     const phoneSelected = document.getElementById(selectedIncorrectAnswer[0]);
     phoneSelected.classList.add('phoneFriend');
-    console.log(phoneSelected);
-    console.log('Phone a Friend: The correct answer is not', selectedIncorrectAnswer);
+    // console.log(phoneSelected);
+    console.log('Phone a Friend: The correct answer is not', selectedIncorrectAnswer[0]);
 
     // const incorrectAnswers = Object.values(game.question.answers).filter(answer => answer.id !== correctAnswer);
     // console.log(incorrectAnswers, 'incorrectAnswers');
@@ -392,23 +393,23 @@ async function initPage() {
   console.log('initPage');
   const level = 'easy';
   // const category = 'html';
-  const panelProgressCount = 14;
-  const answerCount = 0;
-  const actualRound = 1;
+  // const panelProgressCount = 14;
+  // const answerCount = 0;
+  // const actualRound = 1;
   const question = await getQuestion({level});
-  const lifeline50 = true;
-  const lifelineChange = true;
-  const lifelinePhone = true;
+  // const lifeline50 = true;
+  // const lifelineChange = true;
+  // const lifelinePhone = true;
   const game = {
     level,
-    // category,
     question,
-    answerCount,
-    panelProgressCount,
-    lifeline50,
-    lifelineChange,
-    lifelinePhone,
-    actualRound,
+    answerCount: 0,
+    panelProgressCount: 14,
+    lifeline50: true,
+    lifelineChange: true,
+    lifelinePhone: true,
+    actualRound: 1,
+    askedQuestions: [],
   };
   createPage({game});
   printQuestion({game});
